@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aavcut
+      POSTGRES_PASSWORD: aavcut
+      POSTGRES_DB: aavcut
+    ports: ['5433:5432']
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U aavcut']
+      interval: 5s
+      retries: 10
+  app:
+    build: .
+    profiles: ['full']
+    environment:
+      DATABASE_URL: postgresql://aavcut:aavcut@db:5432/aavcut?schema=public
+      APP_URL: http://localhost:3100
+    ports: ['3100:3100']
+    depends_on:
+      db: { condition: service_healthy }
+volumes:
+  pgdata:

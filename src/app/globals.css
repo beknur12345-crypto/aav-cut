@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Classic desktop-app look (left accordion sidebar, grey tab bars, light-blue selection,
+ * colourful icons). Colours are tokens so the theme can be tuned in one place.
+ */
+:root {
+  color-scheme: light;
+  --gl-bg: #f0f0f0;
+  --gl-panel: #ffffff;
+  --gl-border: #c4c4c4;
+  --gl-border-dark: #a4a4a4;
+  --gl-text: #1d1d1d;
+  --gl-link: #0b62c4;
+  --gl-link-disabled: #9db9de;
+  --gl-bar-top: #fafafa;
+  --gl-bar-bottom: #d6d6d6;
+  --gl-tabbar: #c8c8c8;
+  --gl-tab: #7f7f7f;
+  --gl-tab-hover: #6c6c6c;
+  --gl-header: #e9e9e9;
+  --gl-select: #bcdcfb;
+  --gl-caption: #e4e4e4;
+  --gl-part: #ffa500;
+  --gl-part-border: #6b4500;
+  --gl-offcut: #a3abff;
+  --gl-waste: #c9c9c9;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--gl-bg);
+  color: var(--gl-text);
+}
+body {
+  font-family: Arial, Helvetica, 'Segoe UI', sans-serif;
+  font-size: 14px;
+}
+*:focus-visible {
+  outline: 2px solid #2f6fde;
+  outline-offset: 1px;
+}
+
+@layer components {
+  /* Buttons (classic raised) */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-[3px] border px-3 py-1 text-sm text-[#1d1d1d] disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: var(--gl-border-dark);
+    background: linear-gradient(#ffffff, #e2e2e2);
+  }
+  .btn:hover:not(:disabled) {
+    background: linear-gradient(#ffffff, #d4d4d4);
+  }
+  .btn-primary {
+    @apply font-semibold;
+  }
+  .btn-danger {
+    @apply text-[#c0141b];
+  }
+  .btn-ghost {
+    @apply border-transparent bg-none shadow-none;
+  }
+  .icon-btn {
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-[3px] transition hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent;
+  }
+  .input {
+    @apply w-full rounded-none border bg-white px-1.5 py-[3px] text-sm placeholder:text-slate-400 focus:outline-none disabled:bg-[#f4f4f4] disabled:text-slate-500;
+    border-color: var(--gl-border-dark);
+  }
+  .input:focus {
+    border-color: #2f6fde;
+    box-shadow: 0 0 0 1px #2f6fde33;
+  }
+  .input[readonly],
+  output.input {
+    @apply bg-[#f7f7f7] text-slate-500;
+  }
+  .label {
+    @apply mb-0.5 block text-sm text-[#1d1d1d];
+  }
+  .card {
+    @apply border bg-white;
+    border-color: var(--gl-border);
+  }
+
+  /* Sidebar */
+  .gl-acc {
+    @apply flex h-9 w-full items-center gap-2.5 px-3 text-left text-[17px] text-[#1d1d1d];
+    background: linear-gradient(var(--gl-bar-top), var(--gl-bar-bottom));
+    border-top: 1px solid #ffffff;
+    border-bottom: 1px solid var(--gl-border-dark);
+  }
+  .gl-acc:hover {
+    background: linear-gradient(#ffffff, #cbcbcb);
+  }
+  .gl-link {
+    @apply flex w-full items-start gap-1.5 px-2 py-[3px] text-left text-[15px] leading-5 hover:underline;
+    color: var(--gl-link);
+  }
+  .gl-link:disabled,
+  .gl-link[aria-disabled='true'] {
+    color: var(--gl-link-disabled);
+    cursor: default;
+    text-decoration: none;
+  }
+
+  /* Tab bar */
+  .gl-tabbar {
+    @apply flex min-h-[34px] items-center gap-1 px-2;
+    background: var(--gl-tabbar);
+  }
+  .gl-tab {
+    @apply inline-flex h-[26px] items-center gap-1.5 rounded-t-[2px] px-2.5 text-sm text-white;
+    background: var(--gl-tab);
+  }
+  .gl-tab:hover {
+    background: var(--gl-tab-hover);
+  }
+  .gl-tab[aria-selected='true'] {
+    @apply text-[#1d1d1d];
+    background: #ffffff;
+  }
+
+  /* Grids */
+  .gl-grid {
+    @apply w-full border-collapse text-sm;
+  }
+  .gl-grid th {
+    @apply sticky top-0 z-[1] whitespace-nowrap border px-1.5 py-[3px] text-center font-normal;
+    border-color: var(--gl-border);
+    background: linear-gradient(#f6f6f6, var(--gl-header));
+  }
+  .gl-grid td {
+    @apply border-x px-1.5 py-[2px];
+    border-color: #dcdcdc;
+  }
+  .gl-grid tbody tr {
+    @apply cursor-default bg-white;
+  }
+  .gl-grid tbody tr:hover {
+    background: #eef6ff;
+  }
+  .gl-grid tbody tr[aria-selected='true'] {
+    background: var(--gl-select);
+  }
+  .gl-grid td.no {
+    @apply text-center;
+    color: var(--gl-link);
+  }
+  .gl-caption {
+    @apply flex h-[30px] items-center gap-2 border-y px-2 text-sm;
+    background: var(--gl-caption);
+    border-color: var(--gl-border);
+  }
+
+  /* Parameter forms */
+  .gl-form {
+    @apply grid gap-x-8 p-3 lg:grid-cols-2;
+  }
+  .gl-section {
+    @apply mt-1.5 text-sm text-[#333];
+  }
+  .gl-row {
+    @apply flex min-h-[27px] items-center gap-2 py-[1px] text-sm;
+  }
+  .gl-row > .gl-l {
+    @apply flex min-w-0 flex-1 items-center gap-1 pl-0.5;
+  }
+  .gl-row > .gl-v {
+    @apply flex w-[150px] shrink-0 items-center gap-1;
+  }
+  .gl-row > .gl-u {
+    @apply w-9 shrink-0 text-sm;
+  }
+}
+
+/* Spreadsheet grids (AG Grid) in the same classic style */
+.ag-theme-quartz {
+  --ag-font-family: Arial, Helvetica, sans-serif;
+  --ag-font-size: 14px;
+  --ag-grid-size: 4px;
+  --ag-row-height: 25px;
+  --ag-header-height: 26px;
+  --ag-active-color: #2f6fde;
+  --ag-header-background-color: #ececec;
+  --ag-header-foreground-color: #1d1d1d;
+  --ag-border-color: #c4c4c4;
+  --ag-row-border-color: #e2e2e2;
+  --ag-selected-row-background-color: #bcdcfb;
+  --ag-row-hover-color: #eef6ff;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-wrapper-border-radius: 0;
+  --ag-border-radius: 0;
+  --ag-cell-horizontal-border: solid #e2e2e2;
+  --ag-header-column-separator-display: block;
+  --ag-header-column-separator-color: #c4c4c4;
+  --ag-header-column-separator-height: 100%;
+}
+.ag-theme-quartz .ag-header-cell-label {
+  justify-content: center;
+  font-weight: 400;
+}
+.ag-theme-quartz .ag-cell.num {
+  font-variant-numeric: tabular-nums;
+}
+.ag-theme-quartz .ag-cell.no {
+  color: var(--gl-link);
+  text-align: center;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .print-page {
+    break-after: page;
+  }
+}

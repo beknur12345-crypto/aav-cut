@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectState {
+  NOT_ORDERED
+  ORDERED
+  APPROVED
+  DONE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  /// Short public number shown in the account box (like a customer ID).
+  number       Int      @unique @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  locale       String   @default("en")
+  /// Default parts input mode for new projects.
+  inputMode    String   @default("none")
+  currency     String   @default("UAH")
+  /// Postprocessor, XNC editor and order-module settings. Validated by prefsSchema.
+  prefs        Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions    Session[]
+  resetTokens PasswordResetToken[]
+  folders     Folder[]
+  projects    Project[]
+  materials   Material[]
+}
+
+model Session {
+  /// SHA-256 of the cookie token; the raw token never touches the database.
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
+
+model Folder {
+  id        String    @id @default(cuid())
+  userId    String
+  parentId  String?
+  name      String
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Folder?   @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]  @relation("FolderTree")
+  projects  Project[]
+
+  @@index([userId, parentId])
+}
+
+model Project {
+  id        String       @id @default(cuid())
+  number    Int          @unique @default(autoincrement())
+  userId    String
+  folderId  String?
+  name      String
+  state     ProjectState @default(NOT_ORDERED)
+  currency  String       @default("UAH")
+  orderDate String?
+  readyDate String?
+  notes     String       @default("")
+  /// The project document (products, operations, parts, stock, results). Validated by projectDocSchema.
+  doc       Json
+  /// Optimistic concurrency: incremented on every save.
+  version   Int          @default(1)
+  cost      Decimal      @default(0) @db.Decimal(14, 2)
+  /// "app" or "order" (submitted through the public order page).
+  source    String       @default("app")
+  /// Contact details of the customer for projects created by an online order.
+  customer  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder    Folder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  @@index([userId, folderId])
+}
+
+/// Catalog of goods. userId = null → shared catalog visible to everyone (read-only for users).
+model Material {
+  id        String   @id @default(cuid())
+  userId    String?
+  category  String
+  code      String   @default("")
+  name      String
+  unit      String   @default("m2")
+  price     Decimal  @default(0) @db.Decimal(12, 2)
+  thickness Float    @default(18)
+  length    Float    @default(2750)
+  width     Float    @default(1830)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category])
+}
