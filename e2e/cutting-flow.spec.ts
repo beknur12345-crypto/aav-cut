@@ -1,4 +1,14 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
+
+/** Every test fails on an uncaught page error (hydration mismatches included). */
+const test = base.extend<{ pageErrors: void }>({
+  pageErrors: [async ({ page }, use) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await use();
+    expect(errors, 'uncaught errors in the page').toEqual([]);
+  }, { auto: true }],
+});
 
 const SHOTS = process.env.E2E_SCREENSHOTS;
 const shot = async (page: Page, name: string) => {
@@ -12,8 +22,11 @@ async function register(page: Page, email: string) {
   await page.goto('/register');
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Email').fill(email);
-  await dialog.getByLabel('Password', { exact: true }).fill(PASSWORD);
-  await dialog.getByLabel('Repeat password').fill(PASSWORD);
+  // Typed key by key like a person: a dialog that steals focus on re-render would scramble this.
+  await dialog.getByLabel('Password', { exact: true }).click();
+  await page.keyboard.type(PASSWORD);
+  await dialog.getByLabel('Repeat password').click();
+  await page.keyboard.type(PASSWORD);
   await dialog.getByRole('button', { name: 'Register' }).click();
   await expect(page).toHaveURL(/\/projects$/);
 }

@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL!.replace(/([?&]sslmode=)(prefer|require|verify-ca)\b/, '$1verify-full') }) });
 
 const boards: [string, string, string, number, number, number][] = [
   // category, code, name, thickness, length, width

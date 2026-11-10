@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20.11"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev -p 3100",
     "build": "next build",
-    "vercel-build": "prisma migrate deploy && tsx prisma/seed.ts && next build",
+    "vercel-build": "if [ \"$VERCEL_ENV\" = production ]; then prisma migrate deploy && tsx prisma/seed.ts || exit 1; fi; next build",
     "start": "next start -p 3100",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -54,7 +54,7 @@
     "@types/react-dom": "19.2.7",
     "autoprefixer": "10.4.21",
     "dotenv": "17.4.2",
-    "eslint": "9.36.0",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.4.2",
     "postcss": "8.5.6",
     "prisma": "7.10.1",

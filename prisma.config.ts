@@ -6,5 +6,5 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: { path: 'prisma/migrations', seed: 'tsx prisma/seed.ts' },
   // Migrations need a direct connection; hosted Postgres (Neon) exposes it as DATABASE_URL_UNPOOLED.
-  datasource: { url: process.env.DATABASE_URL_UNPOOLED || env('DATABASE_URL') },
+  datasource: { url: (process.env.DATABASE_URL_UNPOOLED || env('DATABASE_URL')).replace(/([?&]sslmode=)(prefer|require|verify-ca)\b/, '$1verify-full') },
 });

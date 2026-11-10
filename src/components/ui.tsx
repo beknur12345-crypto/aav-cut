@@ -1,5 +1,5 @@
 'use client';
-import { cloneElement, createContext, isValidElement, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import { cloneElement, createContext, isValidElement, useCallback, useContext, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Ico, type IcoName } from './Ico';
@@ -11,6 +11,12 @@ export function cx(...c: (string | false | null | undefined)[]) {
 }
 
 /* ---------- Dialog ---------- */
+
+const noSubscribe = () => () => {};
+/** False during server rendering and hydration, true afterwards — keeps the first client render identical to the server HTML. */
+function useHydrated() {
+  return useSyncExternalStore(noSubscribe, () => true, () => false);
+}
 
 export function Dialog({
   open,
@@ -32,8 +38,13 @@ export function Dialog({
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const { t } = useI18n();
+  const hydrated = useHydrated();
+  // Callers usually pass an inline onClose; reading it through a ref keeps the focus setup below
+  // from re-running (and stealing focus back to the first field) on every keystroke.
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; });
   useEffect(() => {
-    if (!open) return;
+    if (!open || !hydrated) return;
     const prev = document.activeElement as HTMLElement | null;
     const el = ref.current;
     // Focus the first field, keep Tab inside the dialog, close on Escape.
@@ -42,7 +53,7 @@ export function Dialog({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        closeRef.current();
       } else if (e.key === 'Tab') {
         const f = focusables();
         if (!f.length) return;
@@ -57,8 +68,8 @@ export function Dialog({
       el?.removeEventListener('keydown', onKey);
       prev?.focus?.();
     };
-  }, [open, onClose]);
-  if (!open || typeof document === 'undefined') return null;
+  }, [open, hydrated]);
+  if (!open || !hydrated) return null;
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/20 p-4 pt-[14vh]" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div

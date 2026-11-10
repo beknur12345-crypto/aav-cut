@@ -1,0 +1,12 @@
+import { chromium } from '@playwright/test';
+const b = await chromium.launch({ channel: 'chrome' });
+const p = await b.newPage();
+const seen = [];
+p.on('requestfinished', async (r) => { const res = await r.response(); seen.push(`${res?.status()} ${r.method()} ${r.url().slice(0, 120)}`); });
+p.on('requestfailed', (r) => seen.push(`FAILED ${r.url().slice(0,120)} ${r.failure()?.errorText}`));
+await p.goto(process.argv[2], { waitUntil: 'load' });
+await p.waitForTimeout(8000);
+const counts = {};
+for (const s of seen) counts[s] = (counts[s] ?? 0) + 1;
+for (const [k, v] of Object.entries(counts)) console.log(v, k);
+await b.close();
