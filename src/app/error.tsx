@@ -1,8 +1,11 @@
 'use client';
+import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { useI18n } from '@/lib/i18n/client';
 
 export default function ErrorPage({ reset, error }: { reset: () => void; error: Error & { digest?: string } }) {
   const { t } = useI18n();
+  useEffect(() => { Sentry.captureException(error); }, [error]);
   return (
     <main className="flex min-h-full flex-col items-center justify-center gap-3 p-8 text-center">
       <h1 className="text-2xl font-semibold">{t('errorTitle')}</h1>

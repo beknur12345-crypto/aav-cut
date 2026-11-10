@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { BRAND } from '@/lib/brand';
 import { getLocale } from '@/lib/i18n/server';
@@ -12,6 +14,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale}>
       <body>
         <I18nProvider locale={locale}>{children}</I18nProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
